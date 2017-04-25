@@ -5,6 +5,8 @@ package com.inker.mblockly;
  * Created by kuoin on 2017/4/25.
  */
 
+import android.app.Activity;
+import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -13,6 +15,8 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
+
+import java.util.HashMap;
 
 public class NavMenuUtil implements NavigationView.OnNavigationItemSelectedListener {
     private AppCompatActivity activity;
@@ -46,8 +50,24 @@ public class NavMenuUtil implements NavigationView.OnNavigationItemSelectedListe
         }
     }
 
+    final HashMap<Integer, Class<?>> nButtonId2Actvitiy = new HashMap<Integer, Class<?>>(){{
+        put(new Integer(R.id.bluetooth_nav_button), BluetoothListActivity.class);
+        put(new Integer(R.id.workspace_nav_button), WorkspaceActivity.class);
+    }};
+
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        return false;
+        int id = item.getItemId();
+        Class<?> aclass = nButtonId2Actvitiy.get(new Integer(id));
+        if(aclass != null && aclass != activity.getClass())
+        {
+            Intent intent = new Intent(activity, aclass);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_TASK_ON_HOME);
+            activity.startActivity(intent);
+            activity.finish();
+        }
+
+        drawer.closeDrawer(GravityCompat.START);
+        return true;
     }
 }

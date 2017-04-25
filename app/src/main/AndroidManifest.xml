@@ -11,6 +11,7 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
+        android:windowSoftInputMode="stateHidden|adjustPan"
         android:theme="@style/AppTheme">
         <activity
             android:name=".BluetoothListActivity"
@@ -21,6 +22,10 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".WorkspaceActivity">
         </activity>
 
         <service
