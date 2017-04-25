@@ -7,6 +7,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.support.v7.app.AppCompatActivity;
@@ -27,6 +28,7 @@ public class BluetoothListActivity extends AppCompatActivity implements BTReques
     private ListView btListview;
     private ArrayList<BluetoothDevice> scanDevices = new ArrayList<>();
     private boolean isUIScanning = false;
+    private NavMenuUtil navUtil = new NavMenuUtil(this);
 
     private void setUIScanning() {
         assert !isUIScanning;
@@ -47,11 +49,10 @@ public class BluetoothListActivity extends AppCompatActivity implements BTReques
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        bt.onCreate();
         setContentView(R.layout.activity_bluetooth_list);
+        navUtil.onCreate();
+        bt.onCreate();
         // UI to symbol
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
         scanButton = ((Button)findViewById(R.id.scan_button));
         btListview = (ListView)findViewById(R.id.bluetooth_listview);
 
@@ -77,20 +78,13 @@ public class BluetoothListActivity extends AppCompatActivity implements BTReques
             }
         };
         btListview.setAdapter(arrayAdapter);
-
-        /*
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
+        btListview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });*/
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
 
-        // Example of a call to a native method
-        //TextView tv = (TextView) findViewById(R.id.sample_text);
-        //tv.setText(stringFromJNI());
+            }
+        });
+
     }
 
     @Override
@@ -148,6 +142,12 @@ public class BluetoothListActivity extends AppCompatActivity implements BTReques
     }
 
     @Override
+    public void onBackPressed() {
+        if(!navUtil.onBackPressed())
+            super.onBackPressed();
+    }
+
+    @Override
     protected void onDestroy() {
         super.onDestroy();
         bt.onDestroy();
@@ -162,15 +162,4 @@ public class BluetoothListActivity extends AppCompatActivity implements BTReques
         }
     }
 
-    /**
-     * A native method that is implemented by the 'native-lib' native library,
-     * which is packaged with this application.
-     */
-    /*public native String stringFromJNI();
-
-    // Used to load the 'native-lib' library on application startup.
-    static {
-        System.loadLibrary("native-lib");
-    }
-    */
 }
