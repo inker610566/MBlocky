@@ -15,12 +15,13 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
+import android.view.View;
 
 import java.util.HashMap;
 
 public class NavMenuUtil implements NavigationView.OnNavigationItemSelectedListener {
     private AppCompatActivity activity;
-    private DrawerLayout drawer;
+    private DrawerLayout drawer = null;
     private Toolbar toolbar;
     private  NavigationView navigationView;
     public NavMenuUtil(AppCompatActivity activtiy) {
@@ -39,6 +40,16 @@ public class NavMenuUtil implements NavigationView.OnNavigationItemSelectedListe
         toggle.syncState();
         
         navigationView.setNavigationItemSelectedListener(this);
+    }
+
+    /**
+     * for WorkspaceActivity
+     * @return
+     */
+    public View onCreateAppNavigationDrawer() {
+        navigationView = (NavigationView)activity.getLayoutInflater().inflate(R.layout.navbar, null);
+        navigationView.setNavigationItemSelectedListener(this);
+        return navigationView;
     }
 
     public boolean onBackPressed() {
@@ -67,7 +78,8 @@ public class NavMenuUtil implements NavigationView.OnNavigationItemSelectedListe
             activity.finish();
         }
 
-        drawer.closeDrawer(GravityCompat.START);
+        if(drawer != null)
+            drawer.closeDrawer(GravityCompat.START);
         return true;
     }
 }

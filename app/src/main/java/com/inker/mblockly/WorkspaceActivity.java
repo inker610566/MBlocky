@@ -15,6 +15,7 @@
 package com.inker.mblockly;
 
 import android.support.annotation.NonNull;
+import android.view.View;
 
 import com.google.blockly.android.AbstractBlocklyActivity;
 import com.google.blockly.android.codegen.CodeGenerationRequest;
@@ -28,6 +29,7 @@ import java.util.List;
  */
 public class WorkspaceActivity extends AbstractBlocklyActivity {
     private static final String TAG = "SimpleActivity";
+    private NavMenuUtil nav = new NavMenuUtil(this);
 
     private static final List<String> BLOCK_DEFINITIONS = Arrays.asList(
             "default/logic_blocks.json",
@@ -45,6 +47,11 @@ public class WorkspaceActivity extends AbstractBlocklyActivity {
 
     CodeGenerationRequest.CodeGeneratorCallback mCodeGeneratorCallback =
             new LoggingCodeGeneratorCallback(this, TAG);
+
+    @Override
+    protected View onCreateAppNavigationDrawer() {
+        return nav.onCreateAppNavigationDrawer();
+    }
 
     @NonNull
     @Override
