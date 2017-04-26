@@ -9,6 +9,8 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/app" />
+            <option value="$PROJECT_DIR$/blocklylib-core-release" />
+            <option value="$PROJECT_DIR$/blocklylib-vertical-release" />
           </set>
         </option>
         <option name="resolveModulePerSourceSet" value="false" />
