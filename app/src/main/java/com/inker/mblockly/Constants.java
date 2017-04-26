@@ -7,4 +7,6 @@ package com.inker.mblockly;
 final class Constants {
     public static final int REQUEST_PERMISSION_BT = 9999; // should not be 0
     public static final int REQUEST_ENABLE_BT = 9998; // should not be 0
+    public static final String MBOTSERVICE_CONNECT_ACTION = "CONNECT";
+    public static final String BLUETOOTH_DEVICE = "BLUETOOTH_DEVICE";
 }

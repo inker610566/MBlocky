@@ -24,6 +24,7 @@ import java.util.ArrayList;
 public class BluetoothListActivity extends AppCompatActivity implements BTRequestEnableCallback{
 
     private BTDiscoveryUtil bt = new BTDiscoveryUtil(this, this);
+    private MBotServiceUtil mbot = new MBotServiceUtil(this);
     private Button scanButton;
     private ListView btListview;
     private ArrayList<BluetoothDevice> scanDevices = new ArrayList<>();
@@ -81,10 +82,9 @@ public class BluetoothListActivity extends AppCompatActivity implements BTReques
         btListview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-
+                mbot.ConnectDevice(scanDevices.get(i));
             }
         });
-
     }
 
     @Override
