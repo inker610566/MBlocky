@@ -7,10 +7,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 
-import com.inker.mblockly.Constants;
-import com.inker.mblockly.FailedCallback;
-import com.inker.mblockly.SuccessCallback;
-
 /**
  * Created by kuoin on 2017/4/26.
  */
@@ -19,87 +15,100 @@ public class MBotServiceUtil {
     private Activity activity;
 
     private BroadcastReceiver mReceiver = null;
-    private SuccessCallback<String> scb;
-    private FailedCallback<String> fcb;
 
-    public MBotServiceUtil(Activity activity) {
+    private ConnectEventCallback ccb;
+    private DisconnectEventCallback dcb;
+    private QueryConnectEventCallback qccb;
+
+    public MBotServiceUtil(
+            Activity activity,
+            ConnectEventCallback ccb,
+            DisconnectEventCallback dcb,
+            QueryConnectEventCallback qccb) {
         this.activity = activity;
+        this.ccb = ccb;
+        this.dcb = dcb;
+        this.qccb = qccb;
     }
 
-    private void CancelReceiver() {
-        if(mReceiver != null) {
-            this.activity.unregisterReceiver(mReceiver);
-            mReceiver = null;
-            scb = null;
-            fcb = null; // if notify cancel?
-        }
-    }
-
-    public void ConnectDevice(BluetoothDevice device, SuccessCallback<String> scb, FailedCallback<String> fcb) {
-        CancelReceiver();
-        this.scb = scb;
-        this.fcb = fcb;
+    /**
+     * Should be called in activity onCreate
+     */
+    public void onCreate() {
         mReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                String errMsg = intent.getStringExtra(Constants.MBOTSERVICE_ERROR_MESSAGE);
-                if(errMsg != null)
-                    MBotServiceUtil.this.fcb.Callback(errMsg);
+                String action = intent.getAction(), errmsg;
+                if(action == Constants.MBOTSERVICE_CONNECT_RESULT_ACTION) {
+                    errmsg = intent.getStringExtra(Constants.MBOTSERVICE_ERROR_MESSAGE);
+                    if(errmsg != null)
+                        ccb.callError(errmsg);
+                    else {
+                        BluetoothDevice device = intent.getParcelableExtra(Constants.BLUETOOTH_DEVICE);
+                        assert device != null;
+                        ccb.call(device);
+                    }
+                }
+                else if (action == Constants.MBOTSERVICE_DISCONNECT_RESULT_ACTION) {
+                    errmsg = intent.getStringExtra(Constants.MBOTSERVICE_ERROR_MESSAGE);
+                    if(errmsg != null) {
+                        if (errmsg == Constants.MBOTSERVICE_ERROR_NO_DEVICE_CONNECT)
+                            dcb.call(null);
+                        else
+                            dcb.callError(errmsg);
+                    }
+                    else {
+                        BluetoothDevice device = intent.getParcelableExtra(Constants.BLUETOOTH_DEVICE);
+                        assert device != null;
+                        dcb.call(device);
+                    }
+                } else if (action == Constants.MBOTSERVICE_QUERY_CONNECT_RESULT_ACTION) {
+                    errmsg = intent.getStringExtra(Constants.MBOTSERVICE_ERROR_MESSAGE);
+                    if(errmsg != null) {
+                        assert errmsg == Constants.MBOTSERVICE_ERROR_NO_DEVICE_CONNECT;
+                        qccb.call(null);
+                    }
+                    else {
+                        BluetoothDevice device = intent.getParcelableExtra(Constants.BLUETOOTH_DEVICE);
+                        assert device != null;
+                        qccb.call(device);
+                    }
+                }
                 else
-                    MBotServiceUtil.this.scb.Callback(null);
+                    assert false;
             }
         };
-        this.activity.registerReceiver(mReceiver, new IntentFilter(Constants.MBOTSERVICE_CONNECT_ACTION_RESULT));
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(Constants.MBOTSERVICE_CONNECT_RESULT_ACTION);
+        filter.addAction(Constants.MBOTSERVICE_DISCONNECT_RESULT_ACTION);
+        filter.addAction(Constants.MBOTSERVICE_QUERY_CONNECT_RESULT_ACTION);
+        this.activity.registerReceiver(mReceiver, filter);
 
-        Intent intent = new Intent(activity, MBotService.class);
-        intent.setAction(Constants.MBOTSERVICE_CONNECT_ACTION);
-        intent.putExtra(Constants.BLUETOOTH_DEVICE, device);
-        activity.startService(intent);
-    }
-
-    class ConnectStateBroadcastReceiver extends BroadcastReceiver {
-        SuccessCallback<BluetoothDevice> callback;
-        ConnectStateBroadcastReceiver(SuccessCallback<BluetoothDevice> callback) {
-            this.callback = callback;
-        }
-
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            callback.Callback((BluetoothDevice) intent.getParcelableExtra(Constants.BLUETOOTH_DEVICE));
-        }
-    }
-
-    public void GetConnectState(SuccessCallback<BluetoothDevice> scb) {
-        this.activity.registerReceiver(
-            new ConnectStateBroadcastReceiver(scb),
-            new IntentFilter(Constants.MBOTSERVICE_QUERY_CONNECT_STATE_ACTION_RESULT)
-        );
-
-        Intent intent = new Intent(activity, MBotService.class);
-        intent.setAction(Constants.MBOTSERVICE_QUERY_CONNECT_STATE_ACTION);
-        activity.startService(intent);
-    }
-
-    public void DisconnectDevice(SuccessCallback<String> scb) {
-        CancelReceiver();
-        this.scb = scb;
-        mReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                MBotServiceUtil.this.scb.Callback(null);
-            }
-        };
-        this.activity.registerReceiver(mReceiver, new IntentFilter(Constants.MBOTSERVICE_DISCONNECT_ACTION_RESULT));
-
-        Intent intent = new Intent(activity, MBotService.class);
-        intent.setAction(Constants.MBOTSERVICE_DISCONNECT_ACTION);
-        activity.startService(intent);
     }
 
     /**
      * Should be called in activity onDestroy
      */
     public void onDestroy() {
-        CancelReceiver();
+        this.activity.unregisterReceiver(mReceiver);
+    }
+
+    public void RequestConnectDevice(BluetoothDevice device) {
+        Intent intent = new Intent(activity, MBotService.class);
+        intent.setAction(Constants.MBOTSERVICE_CONNECT_ACTION);
+        intent.putExtra(Constants.BLUETOOTH_DEVICE, device);
+        activity.startService(intent);
+    }
+
+    public void RequestQueryConnectState() {
+        Intent intent = new Intent(activity, MBotService.class);
+        intent.setAction(Constants.MBOTSERVICE_QUERY_CONNECT_STATE_ACTION);
+        activity.startService(intent);
+    }
+
+    public void RequestDisconnect() {
+        Intent intent = new Intent(activity, MBotService.class);
+        intent.setAction(Constants.MBOTSERVICE_DISCONNECT_ACTION);
+        activity.startService(intent);
     }
 }
