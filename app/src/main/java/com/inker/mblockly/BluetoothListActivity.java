@@ -1,35 +1,111 @@
 package com.inker.mblockly;
 
+import android.app.ProgressDialog;
 import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.view.LayoutInflater;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.inker.mblockly.MBotServer.ConnectEventCallback;
+import com.inker.mblockly.MBotServer.DisconnectEventCallback;
+import com.inker.mblockly.MBotServer.MBotServiceUtil;
+import com.inker.mblockly.MBotServer.QueryConnectEventCallback;
+
 import java.util.ArrayList;
 
-public class BluetoothListActivity extends AppCompatActivity implements BTRequestEnableCallback{
+public class BluetoothListActivity extends AppCompatActivity
+    implements BTRequestEnableCallback {
 
-    private BTDiscoveryUtil bt = new BTDiscoveryUtil(this, this);
-    private MBotServiceUtil mbot = new MBotServiceUtil(this);
+    private BTDiscoveryUtil btDiscovery = new BTDiscoveryUtil(this, this);
+    private MBotServiceUtil btMbot = new MBotServiceUtil(this, new ConnectEventCallback() {
+        @Override
+        public void call(BluetoothDevice device) {
+            setUIConnectTo(device);
+            setUIConnectIdle();
+        }
+
+        @Override
+        public void callError(String message) {
+            setUIConnectIdle();
+            Toast.makeText(BluetoothListActivity.this, "[ERROR] " + message, Toast.LENGTH_LONG).show();
+        }
+    }, new DisconnectEventCallback() {
+        @Override
+        public void call(BluetoothDevice device) {
+            // if device == null already disconnect
+            setUIDisconnectFrom(device);
+        }
+
+        @Override
+        public void callError(String message) {
+            Toast.makeText(BluetoothListActivity.this, "[ERROR] " + message, Toast.LENGTH_LONG).show();
+        }
+    }, new QueryConnectEventCallback() {
+        @Override
+        public void call(BluetoothDevice device) {
+            if(device != null)
+                setUIConnectTo(device);
+        }
+    });
+    private BluetoothDevice connectDevice = null;
+    private ArrayList<BluetoothDevice> scanDevices = new ArrayList<>();
+
     private Button scanButton;
     private ListView btListview;
-    private ArrayList<BluetoothDevice> scanDevices = new ArrayList<>();
-    private boolean isUIScanning = false;
+    private boolean isUIScanning = false, isUIConnecting = false, isUIDisconnecting = false;
     private NavMenuUtil navUtil = new NavMenuUtil(this);
+    private ProgressDialog connectingDialog, disconnectingDialog;
+
+    private void setUIConnectTo(BluetoothDevice device) {
+        connectDevice = device;
+        if(scanDevices.size() == 0) {
+            scanDevices.add(device);
+            ((ArrayAdapter)btListview.getAdapter()).notifyDataSetChanged();
+        }
+        else {
+            /*
+            for(int i = 0 ; i < scanDevices.size() ; i ++) {
+                BluetoothDevice d = scanDevices.get(i);
+                if (d.getAddress().equals(device.getAddress()))
+                    setBTItemStar(btListview.getAdapter().getView(i, null, btListview));
+            }*/
+            ArrayList<BluetoothDevice> tmplist = new ArrayList<>(scanDevices);
+            scanDevices.clear();
+            ((ArrayAdapter)btListview.getAdapter()).notifyDataSetChanged();
+            scanDevices.addAll(tmplist);
+            ((ArrayAdapter)btListview.getAdapter()).notifyDataSetChanged();
+        }
+    }
+
+    private  void setUIDisconnectFrom(BluetoothDevice device) {
+        /*
+            for(int i = 0 ; i < scanDevices.size() ; i ++) {
+                BluetoothDevice d = scanDevices.get(i);
+                if (d.getAddress().equals(device.getAddress()))
+                    setBTItemUnStar(btListview.getAdapter().getView(i, null, btListview));
+            }
+         */
+        connectDevice = null;
+        ArrayList<BluetoothDevice> tmplist = new ArrayList<>(scanDevices);
+        scanDevices.clear();
+        ((ArrayAdapter)btListview.getAdapter()).notifyDataSetChanged();
+        scanDevices.addAll(tmplist);
+        ((ArrayAdapter)btListview.getAdapter()).notifyDataSetChanged();
+    }
+
 
     private void setUIScanning() {
         assert !isUIScanning;
@@ -40,11 +116,45 @@ public class BluetoothListActivity extends AppCompatActivity implements BTReques
         scanButton.setEnabled(false);
     }
 
-    private void setUIIdle() {
+    private void setUIScanIdle() {
         assert isUIScanning;
         isUIScanning = false;
         scanButton.setText(getResources().getText(R.string.scan));
         scanButton.setEnabled(true);
+    }
+
+    private void setUIConnecting(BluetoothDevice device) {
+        assert !isUIConnecting;
+        isUIConnecting = true;
+        connectingDialog = ProgressDialog.show(this, "Connect to "+device.getName()+" "+device.getAddress(), "Connecting");
+    }
+
+    private void setUIConnectIdle() {
+        assert isUIConnecting;
+        isUIConnecting = false;
+        connectingDialog.dismiss();
+    }
+
+    private void setUIDisconnecting() {
+        assert !isUIDisconnecting;
+        isUIDisconnecting = true;
+        disconnectingDialog = ProgressDialog.show(this, "Disconnect to device", "Disconnecting");
+    }
+
+    private  void setUIDisconnectIdle() {
+        assert isUIDisconnecting;
+        isUIDisconnecting = false;
+        disconnectingDialog.dismiss();
+    }
+
+    private void setBTItemStar(View view) {
+        ImageView img = (ImageView) view.findViewById(R.id.imageView);
+        img.setImageResource(R.drawable.star_big_on);
+    }
+
+    private void setBTItemUnStar(View view) {
+        ImageView img = (ImageView) view.findViewById(R.id.imageView);
+        img.setImageResource(R.drawable.star_big_off);
     }
 
     @Override
@@ -52,7 +162,8 @@ public class BluetoothListActivity extends AppCompatActivity implements BTReques
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_bluetooth_list);
         navUtil.onCreate();
-        bt.onCreate();
+        btMbot.onCreate();
+
         // UI to symbol
         scanButton = ((Button)findViewById(R.id.scan_button));
         btListview = (ListView)findViewById(R.id.bluetooth_listview);
@@ -61,20 +172,22 @@ public class BluetoothListActivity extends AppCompatActivity implements BTReques
         scanButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                setUIScanning();
-                bt.initiateDiscovery();
+            setUIScanning();
+            btDiscovery.initiateDiscovery();
             }
         });
         ArrayAdapter<BluetoothDevice> arrayAdapter = new ArrayAdapter<BluetoothDevice>(this, R.layout.btdevice_item, scanDevices){
             @NonNull
             @Override
             public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-                LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
-                View item = inflater.inflate(R.layout.btdevice_item, parent, false);
+                View item = getLayoutInflater().inflate(R.layout.btdevice_item, parent, false);
                 BluetoothDevice device = scanDevices.get(position);
                 String name = device.getName(), addr = device.getAddress();
                 ((TextView)item.findViewById(R.id.textView)).setText(name);
                 ((TextView)item.findViewById(R.id.textView2)).setText(addr);
+                if(connectDevice != null &&
+                    connectDevice.getAddress().equals(addr))
+                    setBTItemStar(item);
                 return item;
             }
         };
@@ -82,9 +195,13 @@ public class BluetoothListActivity extends AppCompatActivity implements BTReques
         btListview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                mbot.ConnectDevice(scanDevices.get(i));
+                BluetoothDevice device = scanDevices.get(i);
+                setUIConnecting(device);
+                btMbot.RequestConnectDevice(device);
             }
         });
+
+        btMbot.RequestQueryConnectState();
     }
 
     @Override
@@ -112,7 +229,7 @@ public class BluetoothListActivity extends AppCompatActivity implements BTReques
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if(!bt.handleEnableRequest(requestCode, resultCode))
+        if(!btDiscovery.handleEnableRequest(requestCode, resultCode))
         {
             // check rest code
         }
@@ -126,19 +243,19 @@ public class BluetoothListActivity extends AppCompatActivity implements BTReques
 
     @Override
     public void resultDeniedBT() {
-        setUIIdle();
+        setUIScanIdle();
         Toast.makeText(this, getResources().getText(R.string.request_bt_failed), Toast.LENGTH_SHORT).show();
     }
 
     @Override
     public void resultDisableBT() {
-        setUIIdle();
+        setUIScanIdle();
         Toast.makeText(this, getResources().getText(R.string.enable_bt_failed), Toast.LENGTH_SHORT).show();
     }
 
     @Override
     public void finishDiscovery() {
-        setUIIdle();
+        setUIScanIdle();
     }
 
     @Override
@@ -150,16 +267,15 @@ public class BluetoothListActivity extends AppCompatActivity implements BTReques
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        bt.onDestroy();
+        btMbot.onDestroy();
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if(!bt.handlePermissionRequest(requestCode, permissions, grantResults))
+        if(!btDiscovery.handlePermissionRequest(requestCode, permissions, grantResults))
         {
             // check rest code
         }
     }
-
 }

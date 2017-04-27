@@ -6,6 +6,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.support.v4.content.LocalBroadcastManager;
 
 /**
  * Created by kuoin on 2017/4/26.
@@ -82,7 +83,7 @@ public class MBotServiceUtil {
         filter.addAction(Constants.MBOTSERVICE_CONNECT_RESULT_ACTION);
         filter.addAction(Constants.MBOTSERVICE_DISCONNECT_RESULT_ACTION);
         filter.addAction(Constants.MBOTSERVICE_QUERY_CONNECT_RESULT_ACTION);
-        this.activity.registerReceiver(mReceiver, filter);
+        LocalBroadcastManager.getInstance(this.activity).registerReceiver(mReceiver, filter);
 
     }
 
@@ -90,7 +91,7 @@ public class MBotServiceUtil {
      * Should be called in activity onDestroy
      */
     public void onDestroy() {
-        this.activity.unregisterReceiver(mReceiver);
+        LocalBroadcastManager.getInstance(this.activity).unregisterReceiver(mReceiver);
     }
 
     public void RequestConnectDevice(BluetoothDevice device) {

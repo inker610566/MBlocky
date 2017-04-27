@@ -8,9 +8,6 @@ import android.os.Parcelable;
 import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.os.ParcelableCompat;
-
-import com.inker.mblockly.Constants;
-
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -81,9 +78,9 @@ public class MBotService extends IntentService {
 
     private void QueryConnectState() {
         if(connectDevice == null)
-            BroadcastError(Constants.MBOTSERVICE_QUERY_CONNECT_STATE_ACTION, Constants.MBOTSERVICE_ERROR_NO_DEVICE_CONNECT);
+            BroadcastError(Constants.MBOTSERVICE_QUERY_CONNECT_RESULT_ACTION, Constants.MBOTSERVICE_ERROR_NO_DEVICE_CONNECT);
         else
-            BroadcastResult(Constants.MBOTSERVICE_QUERY_CONNECT_STATE_ACTION, Constants.BLUETOOTH_DEVICE, connectDevice);
+            BroadcastResult(Constants.MBOTSERVICE_QUERY_CONNECT_RESULT_ACTION, Constants.BLUETOOTH_DEVICE, connectDevice);
     }
 
     @Override
