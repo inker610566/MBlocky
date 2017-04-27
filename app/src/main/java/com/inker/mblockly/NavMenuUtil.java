@@ -5,7 +5,6 @@ package com.inker.mblockly;
  * Created by kuoin on 2017/4/25.
  */
 
-import android.app.Activity;
 import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
@@ -64,6 +63,7 @@ public class NavMenuUtil implements NavigationView.OnNavigationItemSelectedListe
     final HashMap<Integer, Class<?>> nButtonId2Actvitiy = new HashMap<Integer, Class<?>>(){{
         put(new Integer(R.id.bluetooth_nav_button), BluetoothListActivity.class);
         put(new Integer(R.id.workspace_nav_button), WorkspaceActivity.class);
+        put(new Integer(R.id.debug_nav_button), DebugActivity.class);
     }};
 
     @Override
