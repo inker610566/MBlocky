@@ -5,13 +5,18 @@ import android.bluetooth.BluetoothSocket;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.Semaphore;
 
 /**
  * Created by kuoin on 2017/4/27.
  */
 
 public class BTSerialPortAdapter {
-    BluetoothSocket socket;
+    private BluetoothSocket socket;
+    private Semaphore TxWaitRx = new Semaphore(0), RxWaitTx = new Semaphore(0);
+
     public BTSerialPortAdapter(BluetoothSocket socket) {
         this.socket = socket;
     }
@@ -57,6 +62,7 @@ public class BTSerialPortAdapter {
                     edOffset += nbyte;
                 }
             } catch (IOException e) {
+            } catch (InterruptedException e) {
             }
             // TODO: enter shutdown process
         }
@@ -64,33 +70,45 @@ public class BTSerialPortAdapter {
         /**
          * @return new offset, if return > rearBuf size then should swap 2 buf
          */
-        private int ProcessPackage(byte[] rearBuf, byte[] backBuf, int stOffset, int edOffset) {
+        private int ProcessPackage(byte[] rearBuf, byte[] backBuf, int stOffset, int edOffset)
+            throws InterruptedException {
             // TODO: implement a single byte package stub
+            RxPackage pkg = RxPackage.ParsePackage(rearBuf, backBuf, stOffset, edOffset);
+            if(pkg == null)
+                return stOffset;
+            if(pkg.isSync()) {
+                TxWaitRx.release();
+                RxWaitTx.acquire();
+            }
+            return stOffset+pkg.getByteCount();
         }
     }
 
     private class TxThread extends Thread {
         private BluetoothSocket sock;
+        public BlockingQueue<TxPackage> Queue;
         public TxThread(BluetoothSocket sock) {
             this.sock = sock;
+            Queue = new LinkedBlockingDeque<>();
         }
 
         @Override
         public void run() {
             try {
                 OutputStream os = sock.getOutputStream();
-
+                while(true) {
+                    TxPackage pkg = Queue.take();
+                    os.write(pkg.getBytes());
+                    if(pkg.isSync()) {
+                        os.flush();
+                        TxWaitRx.acquire();
+                        RxWaitTx.release();
+                    }
+                }
             } catch (IOException e) {
+            } catch (InterruptedException e) {
             }
             // TODO: enter shutdown process
-        }
-    }
-
-    private void WritePackage(byte[] pkg) {
-        try {
-            ostream.write(pkg);
-        } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 }
