@@ -12,6 +12,8 @@ import android.content.pm.PackageManager;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 
+import java.util.HashSet;
+
 /**
  * Created by kuoin on 2017/4/24.
  * The discovery process is strongly bind with UI component
@@ -19,6 +21,7 @@ import android.support.v4.app.ActivityCompat;
 public class BTDiscoveryUtil {
     private Activity activity;
     private BTRequestEnableCallback callback;
+    private HashSet<String> scannedAddr; // for filter duplicate
     private final String[] REQUIRE_PERMISSION = new String[]{
         Manifest.permission.BLUETOOTH,
         Manifest.permission.BLUETOOTH_ADMIN,
@@ -29,9 +32,12 @@ public class BTDiscoveryUtil {
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
             if (BluetoothDevice.ACTION_FOUND.equals(action)) {
-                callback.deviceFound((BluetoothDevice) intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE));
+                BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                if(scannedAddr.add(device.getAddress()))
+                    callback.deviceFound(device);
             }
             else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
+                activity.unregisterReceiver(this);
                 callback.finishDiscovery();
             }
         }
@@ -45,20 +51,14 @@ public class BTDiscoveryUtil {
         this.callback = callback;
     }
 
-    /**
-     * Should be called in activity.onCreate
-     */
-    public void onCreate()
-    {
+    private void startDiscovery() {
+        scannedAddr = new HashSet<>();
+        BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
+        assert adapter.isEnabled();
         IntentFilter filter = new IntentFilter();
         filter.addAction(BluetoothDevice.ACTION_FOUND);
         filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
         this.activity.registerReceiver(mReceiver, filter);
-    }
-
-    private void startDiscovery() {
-        BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
-        assert adapter.isEnabled();
         adapter.startDiscovery();
     }
 
@@ -107,14 +107,6 @@ public class BTDiscoveryUtil {
             assert false;
 
         return true;
-    }
-
-    /**
-     * Should be called in activity onDestroy
-     */
-    public void onDestroy()
-    {
-        this.activity.unregisterReceiver(mReceiver);
     }
 
 }

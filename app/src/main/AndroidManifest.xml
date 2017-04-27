@@ -29,9 +29,8 @@
         </activity>
 
         <service
-            android:name=".MBotService"
-            android:enabled="true"
-            android:exported="true"></service>
+            android:name=".MBotServer.MBotService"
+            android:exported="false"></service>
     </application>
 
 </manifest>
