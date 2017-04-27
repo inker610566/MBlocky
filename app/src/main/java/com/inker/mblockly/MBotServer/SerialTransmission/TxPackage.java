@@ -5,6 +5,12 @@ package com.inker.mblockly.MBotServer.SerialTransmission;
  */
 
 public class TxPackage {
+    // DUMMY for release BlockQueue
+    public static final TxPackage DUMMY = new TxPackage(null);
+    public static boolean IS_DUMMY(TxPackage pkg) {
+        return pkg.getBytes() == null;
+    }
+
     private byte[] bytes;
 
     /**

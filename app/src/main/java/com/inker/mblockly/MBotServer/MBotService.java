@@ -4,6 +4,7 @@ import android.app.IntentService;
 import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
 import android.bluetooth.BluetoothDevice;
+import android.os.Looper;
 import android.os.Parcelable;
 import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
@@ -23,6 +24,11 @@ public class MBotService extends IntentService {
 
     public MBotService() {
         super("MBotService");
+    }
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
     }
 
     private String ExceptionToString(Exception e) {
