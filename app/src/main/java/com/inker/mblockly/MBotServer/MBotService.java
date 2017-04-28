@@ -7,6 +7,7 @@ import android.bluetooth.BluetoothDevice;
 import android.os.Parcelable;
 import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
+import android.util.Log;
 
 import com.inker.mblockly.MBotServer.SerialTransmission.BTSerialPortAdapter;
 import com.inker.mblockly.MBotServer.SerialTransmission.ReceivePackageCallback;
@@ -56,8 +57,15 @@ public class MBotService extends IntentService {
 
     @Override
     public void onCreate() {
+        Log.i("MBotService", "onCreate");
         super.onCreate();
         serialAdapter.onCreate();
+    }
+
+    @Override
+    public void onDestroy() {
+        Log.i("MBotService", "onDestroy");
+        super.onDestroy();
     }
 
     private void BroadcastResult(String action, String extra_field_name, Parcelable object) {
@@ -93,13 +101,11 @@ public class MBotService extends IntentService {
             socket.connect();
             connectDevice = device;
             this.socket = socket;
+            serialAdapter.Start(socket);
             BroadcastResult(Constants.MBOTSERVICE_CONNECT_RESULT_ACTION, Constants.BLUETOOTH_DEVICE, device);
         } catch (IOException e) {
             Cleanup();
             BroadcastError(Constants.MBOTSERVICE_CONNECT_RESULT_ACTION, e);
-        }
-        if(this.socket != null) {
-            serialAdapter.Start(socket);
         }
     }
 
@@ -112,15 +118,12 @@ public class MBotService extends IntentService {
         else {
             try {
                 socket.close();
-                BluetoothDevice device = connectDevice;
-                BroadcastResult(Constants.MBOTSERVICE_DISCONNECT_RESULT_ACTION, Constants.BLUETOOTH_DEVICE, device);
             } catch (IOException e) {
-                BroadcastError(Constants.MBOTSERVICE_DISCONNECT_RESULT_ACTION, e);
             }
-            finally {
-                Cleanup();
-                serialAdapter.Shutdown();
-            }
+            BluetoothDevice device = connectDevice;
+            BroadcastResult(Constants.MBOTSERVICE_DISCONNECT_RESULT_ACTION, Constants.BLUETOOTH_DEVICE, device);
+            Cleanup();
+            serialAdapter.Shutdown();
         }
     }
 

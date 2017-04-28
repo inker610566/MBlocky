@@ -97,6 +97,7 @@ public class DebugActivity  extends AppCompatActivity {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_debug_layout);
+        btMbot.onCreate();
         navUtil.onCreate();
 
         mBotOutput = (TextView) findViewById(R.id.debugMbotOutput);
@@ -124,5 +125,11 @@ public class DebugActivity  extends AppCompatActivity {
     public void onBackPressed() {
         if(!navUtil.onBackPressed())
             super.onBackPressed();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        btMbot.onDestroy();
     }
 }

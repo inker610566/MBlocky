@@ -66,16 +66,16 @@ public class BTSerialPortAdapter {
         this.socket = socket;
         this.rpcallback = rpcallback;
         this.scallback = scallback;
-        Cleanup();
     }
 
     public void onCreate() {
         toService = new ToServiceEventHandler();
+        Cleanup();
     }
 
     // Should be called on ServiceThread
     public void Start(BluetoothSocket socket) {
-        if(socket != null) {
+        if(this.socket != null) {
             Shutdown();
         }
         this.socket = socket;
@@ -133,7 +133,8 @@ public class BTSerialPortAdapter {
                 is = this.sock.getInputStream();
                 byte[] rearBuf = new byte[Constants.ISTREAM_BUFFER_SIZE],
                        backBuf = new byte[Constants.ISTREAM_BUFFER_SIZE];
-                int stOffset = 0, edOffset = 0, nstOffset;
+                int stOffset = 0, edOffset = 0, nstOffset,
+                    total_length = rearBuf.length+backBuf.length;
                 while(!isShutdown) {
                     while(!isShutdown && (nstOffset = ProcessPackage(rearBuf, backBuf, stOffset, edOffset)) != stOffset) {
                         if(nstOffset >= rearBuf.length) {
@@ -149,10 +150,10 @@ public class BTSerialPortAdapter {
                     // read next bytes
                     int nbyte;
                     if(edOffset >= rearBuf.length) {
-                        nbyte = is.read(backBuf, edOffset, edOffset-backBuf.length);
+                        nbyte = is.read(backBuf, edOffset-rearBuf.length, total_length-edOffset);
                     }
                     else {
-                        nbyte = is.read(rearBuf, edOffset, edOffset-rearBuf.length);
+                        nbyte = is.read(rearBuf, edOffset, rearBuf.length-edOffset);
                     }
                     if (nbyte == 0) break;
                     edOffset += nbyte;

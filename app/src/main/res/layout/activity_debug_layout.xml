@@ -51,7 +51,7 @@
                 android:ems="10"
                 android:inputType="textPersonName"
                 android:hint="HEX CODE"
-                android:text="" />
+                android:text="ff 55 0a 00 02 07 02 01 ee 55 55" />
 
             <Button
                 android:id="@+id/debugFormatButton"
