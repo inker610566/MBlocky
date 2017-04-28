@@ -8,6 +8,8 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.support.v4.content.LocalBroadcastManager;
 
+import com.inker.mblockly.MBotServer.SerialTransmission.RxPackage;
+
 /**
  * Created by kuoin on 2017/4/26.
  */
@@ -20,16 +22,20 @@ public class MBotServiceUtil {
     private ConnectEventCallback ccb;
     private DisconnectEventCallback dcb;
     private QueryConnectEventCallback qccb;
+    private RxPackageCallback rxcb;
 
     public MBotServiceUtil(
             Activity activity,
             ConnectEventCallback ccb,
             DisconnectEventCallback dcb,
-            QueryConnectEventCallback qccb) {
+            QueryConnectEventCallback qccb,
+            RxPackageCallback rxcb
+        ) {
         this.activity = activity;
         this.ccb = ccb;
         this.dcb = dcb;
         this.qccb = qccb;
+        this.rxcb = rxcb;
     }
 
     /**
@@ -74,8 +80,11 @@ public class MBotServiceUtil {
                         assert device != null;
                         qccb.call(device);
                     }
-                }
-                else
+                } else if (action.equals(Constants.MBOTSERVICE_RXPACKAGE_RESULT_ACTION)) {
+                    RxPackage pkg = intent.getParcelableExtra(Constants.MBOTSERVICE_PACKGE);
+                    assert pkg != null;
+                    rxcb.call(pkg);
+                } else
                     assert false;
             }
         };
@@ -110,6 +119,13 @@ public class MBotServiceUtil {
     public void RequestDisconnect() {
         Intent intent = new Intent(activity, MBotService.class);
         intent.setAction(Constants.MBOTSERVICE_DISCONNECT_ACTION);
+        activity.startService(intent);
+    }
+
+    public void RequestSendPackage(byte[] bytes) {
+        Intent intent = new Intent(activity, MBotService.class);
+        intent.setAction(Constants.MBOTSERVICE_SEND_PACKAGE_ACTION);
+        intent.putExtra(Constants.MBOTSERVICE_PACKGE, bytes);
         activity.startService(intent);
     }
 }
