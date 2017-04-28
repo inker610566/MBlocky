@@ -27,6 +27,10 @@ public class MBotService extends IntentService {
     private BTSerialPortAdapter serialAdapter = new BTSerialPortAdapter(new ReceivePackageCallback() {
         @Override
         public void call(RxPackage pkg) {
+            BroadcastResult(
+                Constants.MBOTSERVICE_RXPACKAGE_RESULT_ACTION,
+                Constants.MBOTSERVICE_RXPACKGE,
+                pkg);
         }
     }, new ShutdownEventCallback() {
         @Override
