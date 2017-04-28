@@ -66,7 +66,7 @@ public class BTSerialPortAdapter {
         this.socket = socket;
         this.rpcallback = rpcallback;
         this.scallback = scallback;
-        Init();
+        Cleanup();
     }
 
     public void onCreate() {
@@ -74,7 +74,7 @@ public class BTSerialPortAdapter {
     }
 
     // Should be called on ServiceThread
-    public void Connect(BluetoothSocket socket) {
+    public void Start(BluetoothSocket socket) {
         if(socket != null) {
             Shutdown();
         }
@@ -85,7 +85,7 @@ public class BTSerialPortAdapter {
         txThread.start();
     }
 
-    private void Init() {
+    private void Cleanup() {
         socket = null;
         toService.ClearAllEvents();
         WaitRxTxShutdown = new Semaphore(0);
@@ -95,6 +95,8 @@ public class BTSerialPortAdapter {
 
     // Should be called on ServiceThread
     public void Shutdown() {
+        if(socket == null)
+            return ; // already shutdown
         // close rx tx
         rxThread.TryClose();
         txThread.TryClose();
@@ -107,7 +109,7 @@ public class BTSerialPortAdapter {
         }
 
         // Cleanup
-        Init();
+        Cleanup();
     }
 
     // Should be called on ServiceThread
