@@ -74,7 +74,7 @@ public class BluetoothListActivity extends AppCompatActivity
     private Button scanButton;
     private ListView btListview;
     private boolean isUIScanning = false, isUIConnecting = false, isUIDisconnecting = false;
-    private NavMenuUtil navUtil = new NavMenuUtil(this);
+    private NavMenuUtil navUtil = new NavMenuUtil(this, debugRxPkgs);
     private ProgressDialog connectingDialog, disconnectingDialog;
 
     private void setUIConnectTo(BluetoothDevice device) {

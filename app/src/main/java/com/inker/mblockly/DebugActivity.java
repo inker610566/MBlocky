@@ -114,7 +114,7 @@ public class DebugActivity  extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 byte[] bs = ToByteArray(mBotInput.getText().toString());
-                mBotOutput.setText(new String(bs, StandardCharsets.UTF_8));
+                btMbot.RequestSendPackage(bs);
             }
         });
 
