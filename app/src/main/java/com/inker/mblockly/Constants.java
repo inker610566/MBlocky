@@ -7,4 +7,7 @@ package com.inker.mblockly;
 final class Constants {
     public static final int REQUEST_PERMISSION_BT = 9999; // should not be 0
     public static final int REQUEST_ENABLE_BT = 9998; // should not be 0
+
+    // Activity intent field
+    public static final String DEBUG_RXPACKAGE_LIST = "RXPKGLIST";
 }
