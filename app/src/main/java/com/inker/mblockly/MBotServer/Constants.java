@@ -9,6 +9,7 @@ public class Constants {
     public static final String MBOTSERVICE_CONNECT_ACTION = "CONNECT";
     public static final String MBOTSERVICE_DISCONNECT_ACTION = "DISCONNECT";
     public static final String MBOTSERVICE_QUERY_CONNECT_STATE_ACTION = "QCSTATE";
+    public static final String MBOTSERVICE_SEND_PACKAGE_ACTION = "SEND";
     // ACTION Field
     public static final String BLUETOOTH_DEVICE = "BLUETOOTH_DEVICE";
 
@@ -20,7 +21,7 @@ public class Constants {
 
     // ACTION Field
     public static final String MBOTSERVICE_ERROR_MESSAGE = "ERROR_MSG";
-    public static final String MBOTSERVICE_RXPACKGE = "RXPACKAGE";
+    public static final String MBOTSERVICE_PACKGE = "PACKAGE";
 
     // ACTION Field ErrorType
     public static final String MBOTSERVICE_ERROR_NO_DEVICE_CONNECT = "NO_DEVICE";

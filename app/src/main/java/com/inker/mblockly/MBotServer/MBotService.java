@@ -12,6 +12,7 @@ import com.inker.mblockly.MBotServer.SerialTransmission.BTSerialPortAdapter;
 import com.inker.mblockly.MBotServer.SerialTransmission.ReceivePackageCallback;
 import com.inker.mblockly.MBotServer.SerialTransmission.RxPackage;
 import com.inker.mblockly.MBotServer.SerialTransmission.ShutdownEventCallback;
+import com.inker.mblockly.MBotServer.SerialTransmission.TxPackage;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -29,7 +30,7 @@ public class MBotService extends IntentService {
         public void call(RxPackage pkg) {
             BroadcastResult(
                 Constants.MBOTSERVICE_RXPACKAGE_RESULT_ACTION,
-                Constants.MBOTSERVICE_RXPACKGE,
+                Constants.MBOTSERVICE_PACKGE,
                 pkg);
         }
     }, new ShutdownEventCallback() {
@@ -130,19 +131,28 @@ public class MBotService extends IntentService {
             BroadcastResult(Constants.MBOTSERVICE_QUERY_CONNECT_RESULT_ACTION, Constants.BLUETOOTH_DEVICE, connectDevice);
     }
 
+    private void SendPackage(Intent intent) {
+        byte[] bytes = intent.getByteArrayExtra(Constants.MBOTSERVICE_PACKGE);
+        assert bytes != null;
+        serialAdapter.RequestSendPackage(new TxPackage(bytes));
+    }
+
     @Override
     protected void onHandleIntent(@Nullable Intent intent) {
+        if(intent == null) return;
         String action = intent.getAction();
-        if(action == Constants.MBOTSERVICE_CONNECT_ACTION) {
+        if(action.equals(Constants.MBOTSERVICE_CONNECT_ACTION)) {
             BluetoothDevice device = intent.getParcelableExtra(Constants.BLUETOOTH_DEVICE);
             assert device != null;
             if(connectDevice != null)
                 Disconnect();
             ConnectTo(device);
-        } else if (action == Constants.MBOTSERVICE_DISCONNECT_ACTION)
+        } else if (action.equals(Constants.MBOTSERVICE_DISCONNECT_ACTION))
             Disconnect();
-        else if (action == Constants.MBOTSERVICE_QUERY_CONNECT_STATE_ACTION)
+        else if (action.equals(Constants.MBOTSERVICE_QUERY_CONNECT_STATE_ACTION))
             QueryConnectState();
+        else if (action.equals(Constants.MBOTSERVICE_SEND_PACKAGE_ACTION))
+            SendPackage(intent);
         else
             assert false;
     }

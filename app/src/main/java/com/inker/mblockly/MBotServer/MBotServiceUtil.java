@@ -40,7 +40,7 @@ public class MBotServiceUtil {
             @Override
             public void onReceive(Context context, Intent intent) {
                 String action = intent.getAction(), errmsg;
-                if(action == Constants.MBOTSERVICE_CONNECT_RESULT_ACTION) {
+                if(action.equals(Constants.MBOTSERVICE_CONNECT_RESULT_ACTION)) {
                     errmsg = intent.getStringExtra(Constants.MBOTSERVICE_ERROR_MESSAGE);
                     if(errmsg != null)
                         ccb.callError(errmsg);
@@ -50,10 +50,10 @@ public class MBotServiceUtil {
                         ccb.call(device);
                     }
                 }
-                else if (action == Constants.MBOTSERVICE_DISCONNECT_RESULT_ACTION) {
+                else if (action.equals(Constants.MBOTSERVICE_DISCONNECT_RESULT_ACTION)) {
                     errmsg = intent.getStringExtra(Constants.MBOTSERVICE_ERROR_MESSAGE);
                     if(errmsg != null) {
-                        if (errmsg == Constants.MBOTSERVICE_ERROR_NO_DEVICE_CONNECT)
+                        if (errmsg.equals(Constants.MBOTSERVICE_ERROR_NO_DEVICE_CONNECT))
                             dcb.call(null);
                         else
                             dcb.callError(errmsg);
@@ -63,10 +63,10 @@ public class MBotServiceUtil {
                         assert device != null;
                         dcb.call(device);
                     }
-                } else if (action == Constants.MBOTSERVICE_QUERY_CONNECT_RESULT_ACTION) {
+                } else if (action.equals(Constants.MBOTSERVICE_QUERY_CONNECT_RESULT_ACTION)) {
                     errmsg = intent.getStringExtra(Constants.MBOTSERVICE_ERROR_MESSAGE);
                     if(errmsg != null) {
-                        assert errmsg == Constants.MBOTSERVICE_ERROR_NO_DEVICE_CONNECT;
+                        assert errmsg.equals(Constants.MBOTSERVICE_ERROR_NO_DEVICE_CONNECT);
                         qccb.call(null);
                     }
                     else {
