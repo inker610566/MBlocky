@@ -92,6 +92,7 @@ public class MBotServiceUtil {
         filter.addAction(Constants.MBOTSERVICE_CONNECT_RESULT_ACTION);
         filter.addAction(Constants.MBOTSERVICE_DISCONNECT_RESULT_ACTION);
         filter.addAction(Constants.MBOTSERVICE_QUERY_CONNECT_RESULT_ACTION);
+        filter.addAction(Constants.MBOTSERVICE_RXPACKAGE_RESULT_ACTION);
         LocalBroadcastManager.getInstance(this.activity).registerReceiver(mReceiver, filter);
 
     }

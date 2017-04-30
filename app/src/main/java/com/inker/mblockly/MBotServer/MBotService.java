@@ -20,7 +20,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.UUID;
 
-public class MBotService extends IntentService {
+public class MBotService extends BroadcastReceiveService {
     private static final UUID MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
 
     private BluetoothDevice connectDevice;
@@ -53,6 +53,18 @@ public class MBotService extends IntentService {
     private void Cleanup() {
         connectDevice = null;
         socket = null;
+    }
+
+    private final String[] RECEIVE_ACTIONS = new String[] {
+            Constants.MBOTSERVICE_CONNECT_ACTION,
+            Constants.MBOTSERVICE_DISCONNECT_ACTION,
+            Constants.MBOTSERVICE_QUERY_CONNECT_STATE_ACTION,
+            Constants.MBOTSERVICE_SEND_PACKAGE_ACTION
+    };
+
+    @Override
+    protected String[] getIntentActions() {
+        return RECEIVE_ACTIONS;
     }
 
     @Override

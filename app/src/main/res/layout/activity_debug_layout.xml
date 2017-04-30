@@ -44,6 +44,7 @@
                 android:layout_height="wrap_content"
                 android:text="" />
 
+
             <EditText
                 android:id="@+id/debugMbotInput"
                 android:layout_width="match_parent"
@@ -51,8 +52,9 @@
                 android:ems="10"
                 android:inputType="textPersonName"
                 android:hint="HEX CODE"
-                android:text="ff 55 0a 00 02 07 02 01 ee 55 55" />
-
+                android:text="ff 55 09  00  02     08     07   02   00 ff 55 55 0a" />
+                         <!-- ff 55 len idx action device port solt data a-->
+                         <!-- 0  1  2   3   4      5      6    7    8 -->
             <Button
                 android:id="@+id/debugFormatButton"
                 android:layout_width="match_parent"

@@ -45,7 +45,7 @@ abstract public class BroadcastReceiveService extends Service{
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            Message.obtain(mServiceHandler, 0, intent);
+            mServiceHandler.sendMessage(Message.obtain(mServiceHandler, 0, intent));
         }
     };
 
@@ -77,6 +77,12 @@ abstract public class BroadcastReceiveService extends Service{
     public IBinder onBind(Intent intent) {
         // We don't provide binding, so return null
         return null;
+    }
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        mServiceHandler.sendMessage(Message.obtain(mServiceHandler, 0, intent));
+        return super.onStartCommand(intent, flags, startId);
     }
 
     @Override

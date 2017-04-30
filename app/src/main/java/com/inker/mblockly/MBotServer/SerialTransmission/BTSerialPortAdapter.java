@@ -214,8 +214,8 @@ public class BTSerialPortAdapter {
                         break;
                     }
                     os.write(pkg.getBytes());
+                    os.flush();
                     if(pkg.isSync()) {
-                        os.flush();
                         TxWaitRx.acquire();
                         RxWaitTx.release();
                     }
