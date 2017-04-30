@@ -106,6 +106,8 @@ public class BluetoothListActivity extends AppCompatActivity
         scanDevices.clear();
         scanAddress.clear();
         ((ArrayAdapter)btListview.getAdapter()).notifyDataSetChanged();
+        if(connectDevice != null)
+            setUIScanAddItem(connectDevice);
         scanButton.setText(getResources().getText(R.string.scanning));
         scanButton.setEnabled(false);
     }
@@ -200,8 +202,16 @@ public class BluetoothListActivity extends AppCompatActivity
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 BluetoothDevice device = scanDevices.get(i);
-                setUIConnecting(device);
-                btMbot.RequestConnectDevice(device);
+                if(connectDevice != null &&
+                   device.getAddress().equals(connectDevice.getAddress()) &&
+                   device.getName().equals(connectDevice.getName())) {
+                    setUIDisconnectFrom(device);
+                    btMbot.RequestDisconnect();
+                }
+                else {
+                    setUIConnecting(device);
+                    btMbot.RequestConnectDevice(device);
+                }
             }
         });
 
