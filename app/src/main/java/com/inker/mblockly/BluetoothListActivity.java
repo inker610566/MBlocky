@@ -23,12 +23,15 @@ import com.inker.mblockly.MBotServer.ConnectEventCallback;
 import com.inker.mblockly.MBotServer.DisconnectEventCallback;
 import com.inker.mblockly.MBotServer.MBotServiceUtil;
 import com.inker.mblockly.MBotServer.QueryConnectEventCallback;
+import com.inker.mblockly.MBotServer.RxPackageCallback;
+import com.inker.mblockly.MBotServer.SerialTransmission.RxPackage;
 
 import java.util.ArrayList;
 
 public class BluetoothListActivity extends AppCompatActivity
     implements BTRequestEnableCallback {
 
+    private ArrayList<RxPackage> debugRxPkgs = new ArrayList<>();
     private BTDiscoveryUtil btDiscovery = new BTDiscoveryUtil(this, this);
     private MBotServiceUtil btMbot = new MBotServiceUtil(this, new ConnectEventCallback() {
         @Override
@@ -56,8 +59,13 @@ public class BluetoothListActivity extends AppCompatActivity
     }, new QueryConnectEventCallback() {
         @Override
         public void call(BluetoothDevice device) {
-            if(device != null)
+            if (device != null)
                 setUIConnectTo(device);
+        }
+    }, new RxPackageCallback() {
+        @Override
+        public void call(RxPackage pkg) {
+            debugRxPkgs.add(pkg);
         }
     });
     private BluetoothDevice connectDevice = null;
@@ -66,7 +74,7 @@ public class BluetoothListActivity extends AppCompatActivity
     private Button scanButton;
     private ListView btListview;
     private boolean isUIScanning = false, isUIConnecting = false, isUIDisconnecting = false;
-    private NavMenuUtil navUtil = new NavMenuUtil(this);
+    private NavMenuUtil navUtil = new NavMenuUtil(this, debugRxPkgs);
     private ProgressDialog connectingDialog, disconnectingDialog;
 
     private void setUIConnectTo(BluetoothDevice device) {
@@ -76,12 +84,6 @@ public class BluetoothListActivity extends AppCompatActivity
             ((ArrayAdapter)btListview.getAdapter()).notifyDataSetChanged();
         }
         else {
-            /*
-            for(int i = 0 ; i < scanDevices.size() ; i ++) {
-                BluetoothDevice d = scanDevices.get(i);
-                if (d.getAddress().equals(device.getAddress()))
-                    setBTItemStar(btListview.getAdapter().getView(i, null, btListview));
-            }*/
             ArrayList<BluetoothDevice> tmplist = new ArrayList<>(scanDevices);
             scanDevices.clear();
             ((ArrayAdapter)btListview.getAdapter()).notifyDataSetChanged();
@@ -91,13 +93,6 @@ public class BluetoothListActivity extends AppCompatActivity
     }
 
     private  void setUIDisconnectFrom(BluetoothDevice device) {
-        /*
-            for(int i = 0 ; i < scanDevices.size() ; i ++) {
-                BluetoothDevice d = scanDevices.get(i);
-                if (d.getAddress().equals(device.getAddress()))
-                    setBTItemUnStar(btListview.getAdapter().getView(i, null, btListview));
-            }
-         */
         connectDevice = null;
         ArrayList<BluetoothDevice> tmplist = new ArrayList<>(scanDevices);
         scanDevices.clear();
@@ -144,6 +139,7 @@ public class BluetoothListActivity extends AppCompatActivity
     private  void setUIDisconnectIdle() {
         assert isUIDisconnecting;
         isUIDisconnecting = false;
+        debugRxPkgs.clear();
         disconnectingDialog.dismiss();
     }
 

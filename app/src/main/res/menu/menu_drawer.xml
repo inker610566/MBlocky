@@ -18,6 +18,9 @@
             android:id="@+id/save_nav_button"
             android:icon="@android:drawable/ic_menu_save"
             android:title="Save" />
-
+        <item
+            android:id="@+id/debug_nav_button"
+            android:icon="@android:drawable/presence_busy"
+            android:title="Debug" />
     </group>
 </menu>

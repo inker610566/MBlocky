@@ -29,7 +29,7 @@ import java.util.List;
  */
 public class WorkspaceActivity extends AbstractBlocklyActivity {
     private static final String TAG = "SimpleActivity";
-    private NavMenuUtil nav = new NavMenuUtil(this);
+    private NavMenuUtil nav = new NavMenuUtil(this, null);
 
     private static final List<String> BLOCK_DEFINITIONS = Arrays.asList(
             "default/logic_blocks.json",
