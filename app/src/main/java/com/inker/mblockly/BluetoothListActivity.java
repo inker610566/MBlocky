@@ -27,6 +27,8 @@ import com.inker.mblockly.MBotServer.RxPackageCallback;
 import com.inker.mblockly.MBotServer.SerialTransmission.RxPackage;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 
 public class BluetoothListActivity extends AppCompatActivity
     implements BTRequestEnableCallback {
@@ -70,6 +72,7 @@ public class BluetoothListActivity extends AppCompatActivity
     });
     private BluetoothDevice connectDevice = null;
     private ArrayList<BluetoothDevice> scanDevices = new ArrayList<>();
+    private HashSet<String> scanAddress = new HashSet<>();
 
     private Button scanButton;
     private ListView btListview;
@@ -79,17 +82,12 @@ public class BluetoothListActivity extends AppCompatActivity
 
     private void setUIConnectTo(BluetoothDevice device) {
         connectDevice = device;
-        if(scanDevices.size() == 0) {
-            scanDevices.add(device);
-            ((ArrayAdapter)btListview.getAdapter()).notifyDataSetChanged();
-        }
-        else {
-            ArrayList<BluetoothDevice> tmplist = new ArrayList<>(scanDevices);
-            scanDevices.clear();
-            ((ArrayAdapter)btListview.getAdapter()).notifyDataSetChanged();
-            scanDevices.addAll(tmplist);
-            ((ArrayAdapter)btListview.getAdapter()).notifyDataSetChanged();
-        }
+        setUIScanAddItem(connectDevice); // connectDevice must be in list for toggle disconnect
+        ArrayList<BluetoothDevice> tmplist = new ArrayList<>(scanDevices);
+        scanDevices.clear();
+        ((ArrayAdapter)btListview.getAdapter()).notifyDataSetChanged();
+        scanDevices.addAll(tmplist);
+        ((ArrayAdapter)btListview.getAdapter()).notifyDataSetChanged();
     }
 
     private  void setUIDisconnectFrom(BluetoothDevice device) {
@@ -106,9 +104,19 @@ public class BluetoothListActivity extends AppCompatActivity
         assert !isUIScanning;
         isUIScanning = true;
         scanDevices.clear();
+        scanAddress.clear();
         ((ArrayAdapter)btListview.getAdapter()).notifyDataSetChanged();
         scanButton.setText(getResources().getText(R.string.scanning));
         scanButton.setEnabled(false);
+    }
+
+    private void setUIScanAddItem(BluetoothDevice device) {
+        String addr = device.getAddress();
+        if(!scanAddress.contains(addr)) {
+            scanAddress.add(addr);
+            scanDevices.add(device);
+            ((ArrayAdapter)btListview.getAdapter()).notifyDataSetChanged();
+        }
     }
 
     private void setUIScanIdle() {
@@ -233,8 +241,7 @@ public class BluetoothListActivity extends AppCompatActivity
 
     @Override
     public void deviceFound(BluetoothDevice device) {
-        scanDevices.add(device);
-        ((ArrayAdapter)btListview.getAdapter()).notifyDataSetChanged();
+        setUIScanAddItem(device);
     }
 
     @Override
