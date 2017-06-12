@@ -6,9 +6,11 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.util.Pair;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -27,8 +29,7 @@ import com.inker.mblockly.MBotServer.RxPackageCallback;
 import com.inker.mblockly.MBotServer.SerialTransmission.RxPackage;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.List;
 
 public class BluetoothListActivity extends AppCompatActivity
     implements BTRequestEnableCallback {
@@ -70,10 +71,7 @@ public class BluetoothListActivity extends AppCompatActivity
             debugRxPkgs.add(pkg);
         }
     });
-    private BluetoothDevice connectDevice = null;
-    private ArrayList<BluetoothDevice> scanDevices = new ArrayList<>();
-    private HashSet<String> scanAddress = new HashSet<>();
-
+    private BluetoothList blist;
     private Button scanButton;
     private ListView btListview;
     private boolean isUIScanning = false, isUIConnecting = false, isUIDisconnecting = false;
@@ -81,44 +79,20 @@ public class BluetoothListActivity extends AppCompatActivity
     private ProgressDialog connectingDialog, disconnectingDialog;
 
     private void setUIConnectTo(BluetoothDevice device) {
-        connectDevice = device;
-        setUIScanAddItem(connectDevice); // connectDevice must be in list for toggle disconnect
-        ArrayList<BluetoothDevice> tmplist = new ArrayList<>(scanDevices);
-        scanDevices.clear();
-        ((ArrayAdapter)btListview.getAdapter()).notifyDataSetChanged();
-        scanDevices.addAll(tmplist);
-        ((ArrayAdapter)btListview.getAdapter()).notifyDataSetChanged();
+        blist.setConnectDevice(device);
     }
 
     private  void setUIDisconnectFrom(BluetoothDevice device) {
-        connectDevice = null;
-        ArrayList<BluetoothDevice> tmplist = new ArrayList<>(scanDevices);
-        scanDevices.clear();
-        ((ArrayAdapter)btListview.getAdapter()).notifyDataSetChanged();
-        scanDevices.addAll(tmplist);
-        ((ArrayAdapter)btListview.getAdapter()).notifyDataSetChanged();
+        blist.setDisconnectFrom(device);
     }
 
 
     private void setUIScanning() {
         assert !isUIScanning;
         isUIScanning = true;
-        scanDevices.clear();
-        scanAddress.clear();
-        ((ArrayAdapter)btListview.getAdapter()).notifyDataSetChanged();
-        if(connectDevice != null)
-            setUIScanAddItem(connectDevice);
+        blist.Clear();
         scanButton.setText(getResources().getText(R.string.scanning));
         scanButton.setEnabled(false);
-    }
-
-    private void setUIScanAddItem(BluetoothDevice device) {
-        String addr = device.getAddress();
-        if(!scanAddress.contains(addr)) {
-            scanAddress.add(addr);
-            scanDevices.add(device);
-            ((ArrayAdapter)btListview.getAdapter()).notifyDataSetChanged();
-        }
     }
 
     private void setUIScanIdle() {
@@ -182,29 +156,31 @@ public class BluetoothListActivity extends AppCompatActivity
             btDiscovery.initiateDiscovery();
             }
         });
-        ArrayAdapter<BluetoothDevice> arrayAdapter = new ArrayAdapter<BluetoothDevice>(this, R.layout.btdevice_item, scanDevices){
-            @NonNull
+        blist = new BluetoothList(new ArrayAdapterFactory() {
             @Override
-            public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-                View item = getLayoutInflater().inflate(R.layout.btdevice_item, parent, false);
-                BluetoothDevice device = scanDevices.get(position);
-                String name = device.getName(), addr = device.getAddress();
-                ((TextView)item.findViewById(R.id.textView)).setText(name);
-                ((TextView)item.findViewById(R.id.textView2)).setText(addr);
-                if(connectDevice != null &&
-                    connectDevice.getAddress().equals(addr))
-                    setBTItemStar(item);
-                return item;
+            public BaseAdapter produce(ArrayList<Pair<Boolean, BluetoothDevice>> data) {
+                return new ArrayAdapter<Pair<Boolean, BluetoothDevice>>(BluetoothListActivity.this, R.layout.btdevice_item, data){
+                    @NonNull
+                    @Override
+                    public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
+                        View item = getLayoutInflater().inflate(R.layout.btdevice_item, parent, false);
+                        BluetoothDevice device = blist.data.get(position).second;
+                        String name = device.getName(), addr = device.getAddress();
+                        ((TextView)item.findViewById(R.id.textView)).setText(name);
+                        ((TextView)item.findViewById(R.id.textView2)).setText(addr);
+                        if(blist.data.get(position).first)
+                            setBTItemStar(item);
+                        return item;
+                    }
+                };
             }
-        };
-        btListview.setAdapter(arrayAdapter);
+        });
+        btListview.setAdapter(blist.getAdapter());
         btListview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                BluetoothDevice device = scanDevices.get(i);
-                if(connectDevice != null &&
-                   device.getAddress().equals(connectDevice.getAddress()) &&
-                   device.getName().equals(connectDevice.getName())) {
+                BluetoothDevice device = blist.data.get(i).second;
+                if(BluetoothList.IsEqual(blist.getConnectDevice(), device)) {
                     setUIDisconnectFrom(device);
                     btMbot.RequestDisconnect();
                 }
@@ -251,7 +227,7 @@ public class BluetoothListActivity extends AppCompatActivity
 
     @Override
     public void deviceFound(BluetoothDevice device) {
-        setUIScanAddItem(device);
+        blist.addDevice(device);
     }
 
     @Override
