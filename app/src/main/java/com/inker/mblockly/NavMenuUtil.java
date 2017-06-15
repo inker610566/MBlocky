@@ -49,16 +49,6 @@ public class NavMenuUtil implements NavigationView.OnNavigationItemSelectedListe
         navigationView.setNavigationItemSelectedListener(this);
     }
 
-    /**
-     * for WorkspaceActivity
-     * @return
-     */
-    public View onCreateAppNavigationDrawer() {
-        navigationView = (NavigationView)activity.getLayoutInflater().inflate(R.layout.navbar, null);
-        navigationView.setNavigationItemSelectedListener(this);
-        return navigationView;
-    }
-
     public boolean onBackPressed() {
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
@@ -70,7 +60,6 @@ public class NavMenuUtil implements NavigationView.OnNavigationItemSelectedListe
 
     final HashMap<Integer, Class<?>> nButtonId2Actvitiy = new HashMap<Integer, Class<?>>(){{
         put(new Integer(R.id.bluetooth_nav_button), BluetoothListActivity.class);
-        put(new Integer(R.id.workspace_nav_button), WorkspaceActivity.class);
         put(new Integer(R.id.debug_nav_button), DebugActivity.class);
     }};
 

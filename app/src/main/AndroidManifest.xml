@@ -25,10 +25,6 @@
         </activity>
 
         <activity
-            android:name=".WorkspaceActivity">
-        </activity>
-
-        <activity
             android:name=".DebugActivity"
             android:theme="@style/AppTheme.NoActionBar">
         </activity>
