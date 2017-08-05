@@ -7,6 +7,10 @@
             android:icon="@android:drawable/stat_sys_data_bluetooth"
             android:title="Bluetooth Connect" />
         <item
+            android:id="@+id/demo_nav_button"
+            android:icon="@android:drawable/ic_menu_manage"
+            android:title="Demo" />
+        <item
             android:id="@+id/debug_nav_button"
             android:icon="@android:drawable/presence_busy"
             android:title="Debug" />

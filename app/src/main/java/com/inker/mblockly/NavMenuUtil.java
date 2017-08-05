@@ -60,6 +60,7 @@ public class NavMenuUtil implements NavigationView.OnNavigationItemSelectedListe
 
     final HashMap<Integer, Class<?>> nButtonId2Actvitiy = new HashMap<Integer, Class<?>>(){{
         put(new Integer(R.id.bluetooth_nav_button), BluetoothListActivity.class);
+        put(new Integer(R.id.demo_nav_button), DemoActivity.class);
         put(new Integer(R.id.debug_nav_button), DebugActivity.class);
     }};
 
