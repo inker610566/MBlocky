@@ -72,7 +72,7 @@ public class NavMenuUtil implements NavigationView.OnNavigationItemSelectedListe
         {
             Intent intent = new Intent(activity, aclass);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_TASK_ON_HOME);
-            if(aclass == DebugActivity.class) {
+            if(aclass == DebugActivity.class || aclass == DemoActivity.class) {
                 intent.putParcelableArrayListExtra(Constants.DEBUG_RXPACKAGE_LIST, debugPkgList);
             }
             activity.startActivity(intent);

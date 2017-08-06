@@ -17,6 +17,7 @@ import com.inker.mblockly.MBotServer.RxPackageCallback;
 import com.inker.mblockly.MBotServer.SerialTransmission.RxPackage;
 
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 
 public class DemoActivity extends AppCompatActivity {
     ImageView img;
@@ -54,33 +55,36 @@ public class DemoActivity extends AppCompatActivity {
     }, new RxPackageCallback() {
         @Override
         public void call(RxPackage pkg) {
-            byte[] bytes = pkg.getBytes();
-            for(int i = 0 ; i < bytes.length ; i ++)
-                switch(bytes[i]) {
-                    case 48:
-                        btMbot.RequestSendPackage(Integer.toString(rx).getBytes(Charset.forName("UTF-8")));
-                        btMbot.RequestSendPackage(new byte[]{'.'});
-                        break;
-                    case 49:
-                        btMbot.RequestSendPackage(Integer.toString(rx).getBytes(Charset.forName("UTF-8")));
-                        btMbot.RequestSendPackage(new byte[]{'.'});
-                        break;
-                    case 50:
-                        btMbot.RequestSendPackage(Integer.toString(rx).getBytes(Charset.forName("UTF-8")));
-                        btMbot.RequestSendPackage(new byte[]{'.'});
-                        break;
-                    case 51:
-                        btMbot.RequestSendPackage(Integer.toString(rx).getBytes(Charset.forName("UTF-8")));
-                        btMbot.RequestSendPackage(new byte[]{'.'});
-                        break;
-                    default:
-                        Log.e("MBOT", "NO DEFINE "+Byte.toString(bytes[i]));
-                }
+            ProcessDirectionRequest(pkg);
         }
     });
 
+    private void ProcessDirectionRequest(RxPackage pkg) {
+        byte[] bytes = pkg.getBytes();
+        for(int i = 0 ; i < bytes.length ; i ++)
+            switch(bytes[i]) {
+                case 48:
+                    btMbot.RequestSendPackage(Integer.toString(rx).getBytes(Charset.forName("UTF-8")));
+                    btMbot.RequestSendPackage(new byte[]{'.'});
+                    break;
+                case 49:
+                    btMbot.RequestSendPackage(Integer.toString(ry).getBytes(Charset.forName("UTF-8")));
+                    btMbot.RequestSendPackage(new byte[]{'.'});
+                    break;
+                case 50:
+                    btMbot.RequestSendPackage(Integer.toString(rx).getBytes(Charset.forName("UTF-8")));
+                    btMbot.RequestSendPackage(new byte[]{'.'});
+                    break;
+                case 51:
+                    btMbot.RequestSendPackage(Integer.toString(ry).getBytes(Charset.forName("UTF-8")));
+                    btMbot.RequestSendPackage(new byte[]{'.'});
+                    break;
+                default:
+                    Log.e("MBOT", "NO DEFINE "+Byte.toString(bytes[i]));
+            }
+    }
 
-    private void SendDirection(int x, int y) {
+    private void SetDirection(int x, int y) {
         //Log.e("inkerabcdddd", Integer.toString(x) + Integer.toString(y));
         int x1 = img.getLeft(),
             x2 = img.getRight(),
@@ -106,19 +110,19 @@ public class DemoActivity extends AppCompatActivity {
                 switch (event.getAction()) {
                     // TODO: check if getX getY relative to view
                     case MotionEvent.ACTION_DOWN:
-                        SendDirection(
+                        SetDirection(
                             (int) event.getX(),
                             (int) event.getY()
                         );
                         break;
                     case MotionEvent.ACTION_MOVE:
-                        SendDirection(
+                        SetDirection(
                                 (int) event.getX(),
                                 (int) event.getY()
                         );
                         break;
                     case MotionEvent.ACTION_UP:
-                        SendDirection(
+                        SetDirection(
                                 (int) event.getX(),
                                 (int) event.getY()
                         );
@@ -128,6 +132,8 @@ public class DemoActivity extends AppCompatActivity {
 
             }
         });
+
+        btMbot.RequestSendPackage(new byte[]{'.'});
     }
 
     @Override
